@@ -19,22 +19,15 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Create Complete Minimal Android Project Structure
+    - name: Create Project Files Cleanly
       run: |
         mkdir -p app/src/main/res/values
         mkdir -p app/src/main/java/com/filmx/app
         
-        # إنشاء ملف الإعدادات الرئيسي
-        echo "include ':app'" > settings.gradle.kts
+        printf "include(\":app\")\n" > settings.gradle.kts
         
-        # إنشاء ملف build.gradle للمشروع
-        cat << 'EOF' > build.gradle.kts
-        plugins {
-            id("com.android.application") version "8.2.0" apply false
-        }
-        EOF
+        printf "plugins {\n    id(\"com.android.application\") version \"8.2.0\" apply false\n}\n" > build.gradle.kts
 
-        # إنشاء ملف build.gradle للتطبيق
         cat << 'EOF' > app/build.gradle.kts
         plugins {
             id("com.android.application")
@@ -52,12 +45,10 @@ jobs:
         }
         EOF
 
-        # إنشاء ملف AndroidManifest
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <manifest xmlns:android="http://schemas.android.com/apk/res/android">
             <application
                 android:label="@string/app_name"
-                android:icon="@mipmap/ic_launcher"
                 android:theme="@android:style/Theme.NoTitleBar">
                 <activity android:name=".MainActivity" android:exported="true">
                     <intent-filter>
@@ -69,10 +60,8 @@ jobs:
         </manifest>
         EOF
 
-        # إنشاء اسم التطبيق "فيلمكس"
-        echo '<resources><string name="app_name">فيلمكس</string></resources>' > app/src/main/res/values/strings.xml
+        printf '<resources><string name="app_name">فيلمكس</string></resources>\n' > app/src/main/res/values/strings.xml
 
-        # إنشاء كود أندرويد بسيط لـ MainActivity
         cat << 'EOF' > app/src/main/java/com/filmx/app/MainActivity.kt
         package com.filmx.app
         import android.app.Activity
@@ -88,17 +77,17 @@ jobs:
         }
         EOF
 
-    - name: Download and Setup Gradle Wrapper
+    - name: Setup Gradle Wrapper
       run: |
         gradle_version=8.5
         curl -sLO https://services.gradle.org/distributions/gradle-${gradle_version}-bin.zip
         unzip -q gradle-${gradle_version}-bin.zip
         gradle-${gradle_version}/bin/gradle wrapper --gradle-version ${gradle_version}
 
-    - name: Grant execute permission for gradlew
+    - name: Grant execute permission
       run: chmod +x gradlew
 
-    - name: Build Debug APK
+    - name: Build APK
       run: ./gradlew assembleDebug --stacktrace
 
     - name: Upload APK Artifact
@@ -106,3 +95,4 @@ jobs:
       with:
         name: فيلمكس
         path: app/build/outputs/apk/debug/app-debug.apk
+         
